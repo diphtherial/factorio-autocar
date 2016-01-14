@@ -15,7 +15,7 @@ data:extend(
 		type = "lamp",
 		name = "stall-tile-condition-proxy",
 		icon = "__autocar__/graphics/directives/stall-active.png",
-		flags = {"placeable-neutral", "player-creation"},
+		flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
 		minable = {hardness = 0.2, mining_time = 0.3, result = "stall-tile-condition-proxy"},
 		max_health = 50,
 		corpse = "small-remnants",
@@ -28,9 +28,9 @@ data:extend(
 		  }
 		},
 
-		collision_box = {{-0.4, -0.4}, {0.4, 0.4}},
+		collision_box = {{-0.1, -0.2}, {0.1, 0.2}},
 		collision_mask = { "floor-layer"},
-		selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
+		selection_box = {{-0.1, -0.2}, {0.1, 0.2}},
 		render_layer = "decorative",
 		final_render_layer = "ground_patch_higher2",
 
@@ -52,18 +52,18 @@ data:extend(
 
 	    picture_off =
 	    {
-	      filename = "__autocar__/graphics/directives/stall-active.png",
-	      width = 32,
-	      height = 32,
+	      filename = "__autocar__/graphics/conditionlamp/light-off.png",
+	      width = 14,
+	      height = 19,
 	      frame_count = 1,
 	      axially_symmetrical = false,
 	      direction_count = 1
 	    },
 	    picture_on =
 	    {
-	      filename = "__autocar__/graphics/directives/stall-active.png",
-	      width = 32,
-	      height = 32,
+	      filename = "__autocar__/graphics/conditionlamp/light-on.png",
+	      width = 14,
+	      height = 19,
 	      frame_count = 1,
 	      axially_symmetrical = false,
 	      direction_count = 1
@@ -73,13 +73,13 @@ data:extend(
 	    {
 	      shadow =
 	      {
-	        red = {0.759375, -0.096875},
-	        green = {0.759375, -0.096875},
+	        red = {0.0, -0.2},
+	        green = {0.0, -0.2},
 	      },
 	      wire =
 	      {
-	        red = {0.30625, -0.39375},
-	        green = {0.30625, -0.39375},
+	        red = {0.0, -0.2},
+	        green = {0.0, -0.2},
 	      }
 	    },
 

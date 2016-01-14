@@ -29,9 +29,9 @@ end
 local function onTick()
   runStallTiles()
 
-  if game.tick % 2 == 0 then
+  -- if game.tick % 2 == 0 then
       runCars()
-  end
+  -- end
 end
 
 local function onBuilt(event)
@@ -59,23 +59,27 @@ local function onBuilt(event)
     -- create a ghost smartchest that pushes the autocar's contents to the circuit network when the car is present
     local chest_proxy = game.surfaces[newEntity.surface.name].create_entity({
       name="stall-tile-chest-proxy",
-      position = {newEntity.position.x, newEntity.position.y - 1.0},
+      position = {newEntity.position.x + 0.25, newEntity.position.y - 0.9},
       force = newEntity.force})
 
     chest_proxy.minable = false
     chest_proxy.destructible = false
     chest_proxy.operable = false
 
-    -- -- also create a ghost that monitors the circuit network for an unstuck condition
-    -- local condition_proxy = game.surfaces[newEntity.surface.name].create_entity({
-    --   name="stall-tile-condition-proxy",
-    --   position = {newEntity.position.x, newEntity.position.y - 1.0},
-    --   force = newEntity.force})
+    -- also create a ghost that monitors the circuit network for an unstuck condition
+    local condition_proxy = game.surfaces[newEntity.surface.name].create_entity({
+      name="stall-tile-condition-proxy",
+      position = {newEntity.position.x - 0.3, newEntity.position.y - 0.8},
+      force = newEntity.force})
 
+    condition_proxy.minable = false
+    condition_proxy.destructible = false
+    condition_proxy.operable = true
 
     table.insert(global.stall_tiles, {
       stall_tile=newEntity,
       proxy=chest_proxy,
+      condition=condition_proxy,
       docked_car=nil,
       checked_inventory=2 -- 1: fuel inventory, 2: chest inventory
     })

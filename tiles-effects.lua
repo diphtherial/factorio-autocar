@@ -1,6 +1,11 @@
 require "defines"
 require "config"
 
+-- =============================================================
+-- === tile action and metadata definitions
+-- === (note: prototypes/tile-prototypes.lua reads this table to construct the items/recipes/entities)
+-- =============================================================
+
 tiletypes = {
   -- rotators/reversers
 	rotleft = {
@@ -80,6 +85,10 @@ tiletypes = {
   }
 }
 
+-- =============================================================
+-- === autocar tile-directive and general logic
+-- =============================================================
+
 function runCars()
   for i,v in ipairs(global.autocars) do
     local car = v.car
@@ -99,8 +108,11 @@ function runCars()
         -- compute the tile coordinate we're on
         local tile_loc = {math.floor(car.position.x), math.floor(car.position.y)}
 
+        local closeToCenter = (math.abs(car.position.x - (tile_loc[1]*1.0) - 0.5) <= OFFSET_TOLERANCE) and (math.abs(car.position.y - (tile_loc[2]*1.0) - 0.5) <= OFFSET_TOLERANCE)
+        -- debug("Xd: "..(car.position.x - (tile_loc[1]*1.0))..", Yd: "..(car.position.y - (tile_loc[2]*1.0)))
+
         -- check if we're over a marker and follow its command (if we haven't already)
-        if v.last_command + COMMAND_DELAY < game.tick and not samePos(tile_loc, v.last_command_pos) then
+        if closeToCenter and v.last_command + COMMAND_DELAY < game.tick and not samePos(tile_loc, v.last_command_pos) then
           local tilebelow = car.surface.get_tile(car.position.x, car.position.y)
           local accepted_cmd = nil
 
@@ -115,27 +127,36 @@ function runCars()
             -- check also if there's a stall-active tile entity below us
             local stall_below = car.surface.find_entities_filtered({
                 area = {car.position, car.position},
-                type = "lamp", name = "stall-active-tile" })
+                type = "simple-entity", name = "stall-active-tile" })
 
-            if #stall_below > 0 and stall_below[1].energy > 0 then
-              -- locate the dock in the list of stall tiles
+            if #stall_below > 0 then
+              -- locate the dock in the global list of stall tiles
               for q,s in pairs(global.stall_tiles) do
-                if s.stall_tile == stall_below[1] then
+                -- only stop at this active stall if its condition lamp has energy
+                if s.stall_tile == stall_below[1] and s.condition.energy > 0 then
+                  -- we found it! set up the docking association
                   v.dock = s
                   s.docked_car = car
+
+                  -- set the lamp as our 'stall checker' for this car; if it's satisfied we're good
+                  v.stall_checker = s.condition
+
+                  -- create a dummy accept command to indicate that we handled the event
+                  accepted_cmd = {effect=nil, snap=true}
+
+                  -- sync the chest; if the circuit condition is fulfilled, don't snap
+                  syncProxyChest(v.dock)
+                  if stallCheckerFulfilled(v.stall_checker) then
+                    accepted_cmd.snap = false
+                  end
+
+                  goto found_cmd
                 end
               end
 
-              -- create a dummy accept command to indicate that we handled the event
-              accepted_cmd = {effect=nil, snap=true}
-
-              -- sync the chest; if the circuit condition is fulfilled, don't snap
-              syncProxyChest(v.dock)
-              if stall_below[1].get_circuit_condition(1).fulfilled then
-                accepted_cmd.snap = false
-              end
-
-              goto found_cmd
+              -- if we reach this point, it means we've encountered an orphaned active stall tile
+              -- FIXME: maybe we should break? well, it'll get caught by there not being an accepted cmd anyway...
+              debug("warning: active stall tile not found in global stall tile list!")
             end
           end
 
@@ -165,7 +186,7 @@ function runCars()
           stuck = true
         elseif v.stall_checker ~= nil and v.stall_checker.valid then
           -- check if it has energy and if the condition is clear
-          if v.stall_checker.get_circuit_condition(1).fulfilled then
+          if stallCheckerFulfilled(v.stall_checker) then
             -- we're clear to move on the next frame
             detachFromDock(v)
             stuck = false
@@ -194,6 +215,10 @@ function runCars()
   end
 end
 
+-- =============================================================
+-- === active stall tile management
+-- =============================================================
+
 function runStallTiles()
   for i,v in ipairs(global.stall_tiles) do
     local stallTile = v.stall_tile
@@ -207,6 +232,7 @@ function runStallTiles()
       end
     else
       v.proxy.destroy()
+      v.condition.destroy()
       debug("Stall tile "..i.." removed!")
       table.remove(global.stall_tiles, i)
     end
@@ -222,6 +248,11 @@ function syncProxyChest(stall_meta)
   for name,count in pairs(carChestInv.get_contents()) do
     stall_meta.proxy.insert({name=name,count=count})
   end
+end
+
+function stallCheckerFulfilled(stall_checker)
+  -- allow us to go if the stall checker is out of energy or satisfied, or if the stall checker disappeared
+  return stall_checker == nil or not stall_checker.valid or (stall_checker.valid and (stall_checker.energy < 0 or stall_checker.get_circuit_condition(1).fulfilled))
 end
 
 function detachFromDock(v)
