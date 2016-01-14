@@ -1,0 +1,10 @@
+{
+  "name": "autocar",
+  "version": "0.0.1",
+  "title": "Autocar",
+  "author": "diphtherial",
+  "homepage": "",
+  "contact": "escherial@gmail.com",
+  "description": "An automatable automobile",
+  "dependencies": ["base >= 0.12.0"]
+}

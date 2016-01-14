@@ -1,0 +1,5 @@
+require("prototypes.group")
+require("prototypes.autocar")
+require("prototypes.tile-prototypes")
+require("prototypes.stall-active-tile")
+require("prototypes.stall-active-tile-ghost")

@@ -1,0 +1,232 @@
+require "defines"
+require "config"
+
+tiletypes = {
+  -- rotators/reversers
+	rotleft = {
+    effect=function(car, meta)
+  		car.orientation = car.orientation - 0.25
+      return true
+  	end,
+    subgroup="ac-rotations"
+  },
+	rotright = {
+    effect=function(car, meta)
+  		car.orientation = car.orientation + 0.25
+      return true
+  	end,
+    subgroup="ac-rotations"
+  },
+  reverse = {
+    effect=function(car, meta)
+      car.orientation = car.orientation + 0.5
+      return true
+    end,
+    subgroup="ac-rotations"
+  },
+
+  -- orientation changers
+  orientup = {
+    effect=function(car, meta)
+      car.orientation = 0
+      return true
+    end,
+    subgroup="ac-directions"
+  },
+  orientright = {
+    effect=function(car, meta)
+      car.orientation = 0.25
+      return true
+    end,
+    subgroup="ac-directions"
+  },
+  orientdown = {
+    effect=function(car, meta)
+      car.orientation = 0.5
+      return true
+    end,
+    subgroup="ac-directions"
+  },
+  orientleft = {
+    effect=function(car, meta)
+      car.orientation = 0.75
+      return true
+    end,
+    subgroup="ac-directions"
+  },
+
+  -- specials
+	stall = {
+    effect=function(car, meta)
+  		meta.stall_till = game.tick + STALL_TIME
+      return true
+  	end, subgroup="ac-specials"
+  },
+	slowdown = {
+    effect=function(car, meta)
+  		meta.velocity = (meta.velocity > MIN_SPEED and (meta.velocity - 0.02) or MIN_SPEED)
+      return true
+  	end,
+    subgroup="ac-specials",
+    snap=false
+  },
+	speedup = {
+    effect=function(car, meta)
+  		meta.velocity = (meta.velocity < MAX_SPEED and (meta.velocity + 0.02) or MAX_SPEED)
+      return true
+  	end,
+    subgroup="ac-specials",
+    snap=false
+  }
+}
+
+function runCars()
+  for i,v in ipairs(global.autocars) do
+    local car = v.car
+
+    if car.valid then
+      -- check if we have fuel to do anything
+      local fuelInventory = car.get_inventory(defines.inventory.fuel)
+
+      -- if we still have fuel, process actions
+      if not fuelInventory.is_empty() then
+        -- check if we're supposed to defuel, and if so remove a stack
+        if v.defuel_next ~= nil and v.defuel_next < game.tick then
+          fuelInventory[1].count = ((fuelInventory[1].count > 0) and fuelInventory[1].count-1 or 0)
+          v.defuel_next = nil
+        end
+
+        -- compute the tile coordinate we're on
+        local tile_loc = {math.floor(car.position.x), math.floor(car.position.y)}
+
+        -- check if we're over a marker and follow its command (if we haven't already)
+        if v.last_command + COMMAND_DELAY < game.tick and not samePos(tile_loc, v.last_command_pos) then
+          local tilebelow = car.surface.get_tile(car.position.x, car.position.y)
+          local accepted_cmd = nil
+
+          for name,val in pairs(tiletypes) do
+          	if endswith(tilebelow.name, name) then
+          		accepted_cmd = val
+              goto found_cmd
+          	end
+          end
+
+          if accepted_cmd == nil then
+            -- check also if there's a stall-active tile entity below us
+            local stall_below = car.surface.find_entities_filtered({
+                area = {car.position, car.position},
+                type = "lamp", name = "stall-active-tile" })
+
+            if #stall_below > 0 and stall_below[1].energy > 0 then
+              -- locate the dock in the list of stall tiles
+              for q,s in pairs(global.stall_tiles) do
+                if s.stall_tile == stall_below[1] then
+                  v.dock = s
+                  s.docked_car = car
+                end
+              end
+
+              -- create a dummy accept command to indicate that we handled the event
+              accepted_cmd = {effect=nil, snap=true}
+
+              -- sync the chest; if the circuit condition is fulfilled, don't snap
+              syncProxyChest(v.dock)
+              if stall_below[1].get_circuit_condition(1).fulfilled then
+                accepted_cmd.snap = false
+              end
+
+              goto found_cmd
+            end
+          end
+
+          ::found_cmd::
+
+          if accepted_cmd ~= nil then
+            -- execute the action
+            if accepted_cmd.effect ~= nil then
+              accepted_cmd.effect(car, v)
+            end
+
+            -- snap the car to the tile's position
+            if accepted_cmd.snap == nil or accepted_cmd.snap then
+              car.teleport({tile_loc[1] + 0.5, tile_loc[2] + 0.5})
+            end
+            v.last_command = game.tick
+            v.last_command_pos = tile_loc
+          end
+        end
+
+        -- evaluate movement conditions 
+        -- (i.e. whether we're stalling for a fixed amount of time or on a circuit condition)
+        local stuck = false
+
+        if v.stall_till > game.tick then
+          car.speed = 0
+          stuck = true
+        elseif v.stall_checker ~= nil and v.stall_checker.valid then
+          -- check if it has energy and if the condition is clear
+          if v.stall_checker.get_circuit_condition(1).fulfilled then
+            -- we're clear to move on the next frame
+            detachFromDock(v)
+            stuck = false
+          else
+            -- hold us here until we can move
+            car.speed = 0
+            stuck = true
+          end
+        end
+
+        if not stuck then
+          -- set to cruising velocity
+          car.speed = v.velocity
+
+          -- determine the next time to remove fuel
+          if v.defuel_next == nil and v.velocity > 0.0 and not fuelInventory.is_empty() then
+            v.defuel_next = game.tick + ((fuel_values[fuelInventory[1].name] / v.velocity) / CONSUMPTION_RATE)
+          end
+        end
+      end
+
+    else
+      debug("Autocar "..i.." removed!")
+      table.remove(global.autocars, i)
+    end
+  end
+end
+
+function runStallTiles()
+  for i,v in ipairs(global.stall_tiles) do
+    local stallTile = v.stall_tile
+
+    if stallTile.valid then
+      -- sync the docked car, if there is one
+      if v.docked_car ~= nil and v.docked_car.valid then
+        syncProxyChest(v)
+      else
+        v.proxy.clear_items_inside()
+      end
+    else
+      v.proxy.destroy()
+      debug("Stall tile "..i.." removed!")
+      table.remove(global.stall_tiles, i)
+    end
+  end
+end
+
+function syncProxyChest(stall_meta)
+  -- local chestInv = v.proxy.get_inventory(defines.inventory.chest)
+  local carFuelInv = stall_meta.docked_car.get_inventory(1)
+  local carChestInv = stall_meta.docked_car.get_inventory(stall_meta.checked_inventory)
+
+  stall_meta.proxy.clear_items_inside()
+  for name,count in pairs(carChestInv.get_contents()) do
+    stall_meta.proxy.insert({name=name,count=count})
+  end
+end
+
+function detachFromDock(v)
+  v.dock.proxy.clear_items_inside()
+  v.dock.docked_car = nil
+  v.dock = nil
+  v.stall_checker = nil
+end
