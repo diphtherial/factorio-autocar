@@ -104,3 +104,8 @@ for k, v in pairs(tiletypes) do
     data.raw[recipe.type][recipe.name] = recipe
   end
 end
+
+-- correct the idle recipe to take less resources
+data.raw["recipe"]["autocar-idle"].ingredients = {
+  {"stone", 1}
+}

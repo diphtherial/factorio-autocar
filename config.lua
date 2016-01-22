@@ -1,6 +1,6 @@
 require 'defines'
 
-debug_mode = true -- Set to true to receive tasty debugging information ingame
+debug_mode = false -- Set to true to receive tasty debugging information ingame
 
 COMMAND_DELAY = 0 -- debounce before a car can execute another command (this is mostly handled otherwise by the car remembering the last tile that issued it a command)
 STALL_TIME = 100 -- time to stop at a basic stall tile

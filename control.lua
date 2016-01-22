@@ -42,6 +42,7 @@ local function onBuilt(event)
     debug("Autocar created!")
     table.insert(global.autocars, {
       car=newEntity,
+      state=STATE_RUNNING,
       velocity=DEFAULT_SPEED,
       last_command=game.tick,
       stall_till=game.tick,

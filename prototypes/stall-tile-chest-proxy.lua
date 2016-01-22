@@ -10,6 +10,7 @@ data:extend(
 		place_result = "stall-tile-chest-proxy",
 		stack_size = 50
 	},
+
 	{
 		type = "smart-container",
 		name = "stall-tile-chest-proxy",
@@ -61,30 +62,45 @@ data:extend(
 			green = {0, 0}
 		  }
 		},
-
-	    -- picture =
-	    -- {
-	    --   filename = "__base__/graphics/entity/smart-chest/smart-chest.png",
-	    --   priority = "extra-high",
-	    --   width = 62,
-	    --   height = 41,
-	    --   shift = {0.4, -0.13}
-	    -- },
-	    -- circuit_wire_connection_point =
-	    -- {
-	    --   shadow =
-	    --   {
-	    --     red = {0.7, -0.3},
-	    --     green = {0.7, -0.3}
-	    --   },
-	    --   wire =
-	    --   {
-	    --     red = {0.3, -0.8},
-	    --     green = {0.3, -0.8}
-	    --   }
-	    -- },
-
 		circuit_wire_max_distance = 7.5
-	}
+	},
+
+	-- {
+	--     type = "constant-combinator",
+	--     name = "stall-tile-chest-proxy",
+	--     icon = "__base__/graphics/icons/smart-chest.png",
+	--     flags = {"placeable-neutral", "player-creation", "placeable-off-grid"},
+	--     minable = {hardness = 0.2, mining_time = 0.5, result = "stall-tile-chest-proxy"},
+	--     max_health = 50,
+	--     corpse = "small-remnants",
+
+	-- 	collision_box = {{0, 0}, {0, 0}},
+	-- 	selection_box = {{-0.3, -0.3}, {0.3, 0.3}},
+
+	--     item_slot_count = 120,
+
+	--     sprite =
+	--     {
+	-- 	  filename = "__base__/graphics/icons/smart-chest.png",
+	--       x = 20,
+	--       width = 20,
+	--       height = 20,
+	--       shift = {0.0, 0.0},
+	--     },
+	--     circuit_wire_connection_point =
+	--     {
+	--       shadow =
+	--       {
+	--         red = {0.7, -0.3},
+	--         green = {0.7, -0.3}
+	--       },
+	--       wire =
+	--       {
+	--         red = {0.3, -0.8},
+	--         green = {0.3, -0.8}
+	--       }
+	--     },
+	--     circuit_wire_max_distance = 7.5
+ --  	},
 })
 
