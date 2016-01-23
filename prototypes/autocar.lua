@@ -1,3 +1,5 @@
+local default_enabled = true
+
 data:extend({
     -- item definition
   {
@@ -15,7 +17,7 @@ data:extend({
   {
     type = "recipe",
     name = "autocar",
-    enabled = false,
+    enabled = default_enabled,
     ingredients =
     {
       {"iron-plate", 20},

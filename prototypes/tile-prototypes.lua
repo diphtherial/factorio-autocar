@@ -1,5 +1,7 @@
 require "tiles-effects"
 
+local default_enabled = true
+
 -- ======================================
 -- == RIGHT-ROTATION TILE (all other types are variants of this)
 -- ======================================
@@ -64,7 +66,7 @@ data:extend({
   {
     type = "recipe",
     name = "autocar-rotright",
-    enabled = false,
+    enabled = default_enabled,
     ingredients =
     {
       {"electronic-circuit", 1},
