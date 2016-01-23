@@ -8,6 +8,7 @@ As the version number (0.0.2 at time of writing) indicates, this is a super-roug
 The main research is the "Tile Directives" research, available after Automobolism. That unlocks the following items:
 
 - The **Autocar**, a car-like entity that currently looks just like the car sans a turret. The player can ride it, but not control it at all. When fuel is inserted, it'll move forward at the default (slow) speed and consume fuel items until it runs out or hits something. The car will cease to respond to tile directives once it runs out of fuel, so plan accordingly.
+- An autocar variant with a turret, the **Autocar w/Turret**, that can be loaded with basic or piercing bullets by dropping them into the trunk inventory. They'll be automatically stocked into the turret if the car has fuel and there's space in the turret for them.
 - **Tile Directives**, concrete-like tiles with instructions on them that the car will follow when it runs over one. The car will snap to the position of the center of the tile on contact to keep it on the grid. The tile commands are described below. (Since they're like concrete, they'll by default start with a 2x2 brush size; you should probably reduce this to 1x1 by pressing the '-' key.)
 
 ## Tile Directive Types:
@@ -18,6 +19,8 @@ The main research is the "Tile Directives" research, available after Automobolis
 4. **Pause:** stops the car for a few seconds, then allows it to resume.
 5. **Speed Up/Down:** increases or decreases the car's speed, respectively, which also changes fuel consumption. There is a maximum and minimum speed, configurable in the config.lua file.
 6. **Stall:** hold the car until the circuit condition on the attached lamp is satisfied. Must be powered and the lamp must be connected to a circuit network to function. The smart-chest part can also be connected to a circuit network, and will publish the car's inventory to the attached network.
+7. **Board:** causes a player standing within a 2-block vicinity of the car to be sucked up as a passenger.
+8. **Eject:** if a player is in the car, they will be ejected to a safe location.
 
 There is also an **Idle Tile** (still in development) that can be used to have the car place a tile automatically after some time elapses. When a stack of idle tiles are placed in the trunk, the car will remove one item from the first stack of idle tiles it finds (scanning left-to-right, bottom-to-top). When the last idle tile is removed, and a tile directive is in the immediately next inventory slot, that tile directive will be placed in front of the car. This allows you to do things like dispatch a car with a stack of idle tiles and a reverse tile immediately after it to set up a loop to a far-off destination quickly. You can set up sequences of tiles to place by interspersing idle tiles and tile directives in the inventory (e.g. to construct a circular loop).
 

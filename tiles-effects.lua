@@ -63,6 +63,33 @@ tiletypes = {
     subgroup="ac-directions"
   },
 
+  -- entry/exit tiles
+  eject = {
+    effect=function(car, meta)
+      if car.passenger then
+        car.passenger = nil
+      end
+    end,
+    subgroup="ac-specials",
+    snap=false
+  },
+  board = {
+    effect=function(car, meta)
+      -- scan the area around the car for a player and board them
+      local ents_in_area = car.surface.find_entities_filtered({
+        area={{car.position.x-2, car.position.y-2}, {car.position.x+2, car.position.y+2}},
+        name="player",
+        force=car.force
+      })
+
+      if #ents_in_area > 0 then
+        car.passenger = ents_in_area[1]
+      end
+    end,
+    subgroup="ac-specials",
+    snap=false
+  },
+
   -- specials
 	stall = {
     effect=function(car, meta)

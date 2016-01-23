@@ -38,7 +38,9 @@ data:extend({
 		{
 		  { type = "unlock-recipe", recipe = "autocar-speedup" },
 		  { type = "unlock-recipe", recipe = "autocar-slowdown" },
-		  { type = "unlock-recipe", recipe = "autocar-stall" }
+		  { type = "unlock-recipe", recipe = "autocar-stall" },
+		  { type = "unlock-recipe", recipe = "autocar-board" },
+		  { type = "unlock-recipe", recipe = "autocar-eject" },
 		},
 		prerequisites = {"autocar-unit"},
 		unit =

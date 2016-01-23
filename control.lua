@@ -63,9 +63,9 @@ local function onBuilt(event)
 
     table.insert(global.autocars, car_meta)
 
-    for i,v in pairs(global.autocars) do
-      debug(table.tostring(v))
-    end
+    -- for i,v in pairs(global.autocars) do
+    --   debug(table.tostring(v))
+    -- end
   elseif newEntityName == "stall-active-tile" then
     debug("Stall tile created!")
 
