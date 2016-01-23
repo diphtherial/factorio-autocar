@@ -58,6 +58,7 @@ local function onBuilt(event)
           position=newEntity.position,
           force=newEntity.force
         })
+      turret_entity.destructible = false
       car_meta.turret = turret_entity
     end
 
@@ -100,6 +101,26 @@ local function onBuilt(event)
 end
 
 local function onRemove(event)
+  -- return turret's inventory to the player
+  if event.entity.name == "autocar-turreted" then
+    for i,v in pairs(global.autocars) do
+      if v.car == event.entity and event.player_index ~= nil and v.turret ~= nil and v.turret.valid then
+        local removedBasic = v.turret.remove_item({name="basic-bullet-magazine", count=1000})
+        local removedPiercing = v.turret.remove_item({name="piercing-bullet-magazine", count=1000})
+
+        if removedBasic > 0 then
+          game.players[event.player_index].insert({name="basic-bullet-magazine", count=removedBasic})
+        end
+        if removedPiercing > 0 then
+          game.players[event.player_index].insert({name="piercing-bullet-magazine", count=removedBasic})
+        end
+        
+        goto complete
+      end
+    end
+
+    ::complete::
+  end
 end
 
 -- =============================================================
