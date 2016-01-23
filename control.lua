@@ -38,7 +38,7 @@ local function onBuilt(event)
   local newEntityName = event.created_entity.name
   local newEntity = event.created_entity
 
-  if newEntityName == "autocar" or "autocar-turreted" then
+  if newEntityName == "autocar" or newEntityName == "autocar-turreted" then
     debug("Autocar created!")
     local car_meta = {
       car=newEntity,
