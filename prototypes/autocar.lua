@@ -15,7 +15,7 @@ data:extend({
   {
     type = "recipe",
     name = "autocar",
-    enabled = true,
+    enabled = false,
     ingredients =
     {
       {"iron-plate", 20},
@@ -263,3 +263,29 @@ data:extend({
     close_sound = { filename = "__base__/sound/car-door-close.ogg", volume = 0.7 }
   }
 })
+
+-- slightly modify the autocar to make a variety with a turret included
+local ac_entity = util.table.deepcopy(data.raw["car"]["autocar"])
+local ac_item = util.table.deepcopy(data.raw["item"]["autocar"])
+local ac_recipe = util.table.deepcopy(data.raw["recipe"]["autocar"])
+
+ac_entity.name = "autocar-turreted"
+ac_entity.minable.result = "autocar-turreted"
+ac_item.name = "autocar-turreted"
+ac_item.place_result = "autocar-turreted"
+ac_recipe.name = "autocar-turreted"
+ac_recipe.result = "autocar-turreted"
+
+data.raw[ac_entity.type][ac_entity.name] = ac_entity
+data.raw[ac_item.type][ac_item.name] = ac_item
+data.raw[ac_recipe.type][ac_recipe.name] = ac_recipe
+
+-- also clone the turret so we can stick it on the car?
+local ac_turret_entity = util.table.deepcopy(data.raw["ammo-turret"]["gun-turret"])
+ac_turret_entity.name = "fixed-turret"
+ac_turret_entity.flags = {"player-creation", "placeable-off-grid", "not-repairable"}
+ac_turret_entity.selection_box = {{-0.1, -0.1}, {0.1, 0.1}}
+ac_turret_entity.collision_box = {{0,0}, {0,0}}
+ac_turret_entity.collision_mask = {}
+
+data.raw[ac_turret_entity.type][ac_turret_entity.name] = ac_turret_entity

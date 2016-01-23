@@ -38,9 +38,9 @@ local function onBuilt(event)
   local newEntityName = event.created_entity.name
   local newEntity = event.created_entity
 
-  if newEntityName == "autocar" then
+  if newEntityName == "autocar" or "autocar-turreted" then
     debug("Autocar created!")
-    table.insert(global.autocars, {
+    local car_meta = {
       car=newEntity,
       state=STATE_RUNNING,
       velocity=DEFAULT_SPEED,
@@ -48,8 +48,20 @@ local function onBuilt(event)
       stall_till=game.tick,
       stall_checker=nil,
       defuel_next=nil,
-      dock=nil
-    })
+      dock=nil,
+      turret=nil
+    }
+
+    if newEntityName == "autocar-turreted" then
+      local turret_entity = newEntity.surface.create_entity({
+          name="fixed-turret",
+          position=newEntity.position,
+          force=newEntity.force
+        })
+      car_meta.turret = turret_entity
+    end
+
+    table.insert(global.autocars, car_meta)
 
     for i,v in pairs(global.autocars) do
       debug(table.tostring(v))

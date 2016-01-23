@@ -107,6 +107,9 @@ function runCars()
       execCar(car, v)
     else
       debug("Autocar "..i.." removed!")
+      if v.turret ~= nil and v.turret.valid then
+        v.turret.destroy()
+      end
       table.remove(global.autocars, i)
     end
   end
@@ -114,6 +117,11 @@ end
 
 function execCar(car, v)
   local fuelInventory = car.get_inventory(defines.inventory.fuel)
+
+  -- if we're a turreted car, sync the turret to our position at all times
+  if v.turret ~= nil and v.turret.valid then
+    v.turret.teleport(car.position)
+  end
 
   -- can't do anything if we don't have fuel!
   if fuelInventory.is_empty() then
@@ -233,6 +241,26 @@ function execCar(car, v)
     local trunkInventory = car.get_inventory(2) -- #2 is apparently the vehicle inventory...
 
     if not trunkInventory.is_empty() then
+      
+      -- firstly, if we have a turret try to put ammo into it
+      if v.turret ~= nil and v.turret.valid then
+        -- check if the trunk contains any bullets (priority given to piercing bullets)
+        local piercingBullets = trunkInventory.get_item_count("piercing-bullet-magazine")
+        local basicBullets = trunkInventory.get_item_count("basic-bullet-magazine")
+
+        if piercingBullets > 0 and v.turret.can_insert({name="piercing-bullet-magazine", count=piercingBullets}) then
+          trunkInventory.remove({
+            name="piercing-bullet-magazine",
+            count=v.turret.insert({name="piercing-bullet-magazine", count=piercingBullets})
+          })
+        elseif basicBullets > 0 and v.turret.can_insert({name="basic-bullet-magazine", count=basicBullets}) then
+          trunkInventory.remove({
+            name="basic-bullet-magazine",
+            count=v.turret.insert({name="basic-bullet-magazine", count=basicBullets})
+          })
+        end
+      end
+
       for i=1,#trunkInventory-1 do
         local item = trunkInventory[i]
         local nextElem = trunkInventory[i+1]

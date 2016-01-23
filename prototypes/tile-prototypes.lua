@@ -64,7 +64,7 @@ data:extend({
   {
     type = "recipe",
     name = "autocar-rotright",
-    enabled = true,
+    enabled = false,
     ingredients =
     {
       {"electronic-circuit", 1},

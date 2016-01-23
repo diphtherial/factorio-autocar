@@ -7,6 +7,7 @@ data:extend({
 		effects =
 		{
 		  { type = "unlock-recipe", recipe = "autocar"},
+		  { type = "unlock-recipe", recipe = "autocar-turreted"},
 		  { type = "unlock-recipe", recipe = "autocar-rotleft" },
 		  { type = "unlock-recipe", recipe = "autocar-rotright" },
 		  { type = "unlock-recipe", recipe = "autocar-reverse" },
