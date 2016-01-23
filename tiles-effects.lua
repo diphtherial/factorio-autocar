@@ -271,20 +271,16 @@ function execCar(car, v)
       
       -- firstly, if we have a turret try to put ammo into it
       if v.turret ~= nil and v.turret.valid then
-        -- check if the trunk contains any bullets (priority given to piercing bullets)
-        local piercingBullets = trunkInventory.get_item_count("piercing-bullet-magazine")
-        local basicBullets = trunkInventory.get_item_count("basic-bullet-magazine")
-
-        if piercingBullets > 0 and v.turret.can_insert({name="piercing-bullet-magazine", count=piercingBullets}) then
-          trunkInventory.remove({
-            name="piercing-bullet-magazine",
-            count=v.turret.insert({name="piercing-bullet-magazine", count=piercingBullets})
-          })
-        elseif basicBullets > 0 and v.turret.can_insert({name="basic-bullet-magazine", count=basicBullets}) then
-          trunkInventory.remove({
-            name="basic-bullet-magazine",
-            count=v.turret.insert({name="basic-bullet-magazine", count=basicBullets})
-          })
+        local prototypes = game.item_prototypes
+        for i = 1, #trunkInventory do
+          local invSlot = trunkInventory[i]
+          if invSlot ~= nil and invSlot.valid and prototypes[invSlot.name].type == "ammo" then
+            if v.turret.can_insert({name=invSlot.name, count=1}) then
+              v.turret.insert({name=invSlot.name, count=1})
+              invSlot.count = invSlot.count - 1
+              break
+            end
+          end
         end
       end
 
